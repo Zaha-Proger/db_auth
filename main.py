@@ -45,8 +45,6 @@ def search(db, table, flag, records):
     search_window.geometry("300x100+400+300")
     search_window.resizable(False, False)
 
-    cur_table = table
-
     search_entry = CTK.CTkEntry(master=search_window,  width = 250)
     search_entry.pack(padx = 20, pady = 20)
 
@@ -59,6 +57,8 @@ def search(db, table, flag, records):
             db.cursor.execute("SELECT * FROM authInfo WHERE desc LIKE ? OR date LIKE ? OR proc LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "lastlog":
             db.cursor.execute("SELECT * FROM lastLogInfo WHERE user LIKE ? OR proc LIKE ? OR out LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR rangeTime LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
+        elif flag == "log_btmp":
+            db.cursor.execute("SELECT * FROM btmpLogInfo WHERE user LIKE ? OR proc LIKE ? OR out LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR rangeTime LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
         results = db.cursor.fetchall()
         # Очистка результатов
         for item in table.get_children():
@@ -105,15 +105,12 @@ def open_table_secure_log():
     table.column("#1", stretch=False, width=100, anchor="center")
     table.column("#2", stretch=False, width=100, anchor="center")
     table.column("#3", stretch=False, width=300, anchor="center")
-    table.column("#4", stretch=True, width=800)
+    table.column("#4", stretch=False, width=800)
 
     db.cursor.execute("SELECT * FROM authInfo")
     records = db.cursor.fetchall()
     for r in records:
         table.insert("", "end", values=r)
-    
-    # frame_with_buttons = CTK.CTkFrame(master=root)
-    # frame_with_buttons.grid(row=1, column=0, padx=5, pady=5, sticky="nsew")
 
 def open_table_last_log():
     global db, parser, root
@@ -153,12 +150,60 @@ def open_table_last_log():
     table.column("#1", stretch=False, width=100, anchor="center")
     table.column("#2", stretch=False, width=100, anchor="center")
     table.column("#3", stretch=False, width=100, anchor="center")
-    table.column("#4", stretch=True, width=100, anchor="center")
-    table.column("#5", stretch=True, width=100, anchor="center")
-    table.column("#6", stretch=True, width=100, anchor="center")
-    table.column("#7", stretch=True, width=100, anchor="center")
+    table.column("#4", stretch=False, width=100, anchor="center")
+    table.column("#5", stretch=False, width=100, anchor="center")
+    table.column("#6", stretch=False, width=100, anchor="center")
+    table.column("#7", stretch=False, width=100, anchor="center")
 
     db.cursor.execute("SELECT * FROM lastLogInfo")
+    records = db.cursor.fetchall()
+    for r in records:
+        table.insert("", "end", values=r)
+
+def open_table_btmp_log():
+    global db, parser, root
+   
+    x = 480
+    y = 120
+
+    root.wm_geometry("+%d+%d" % (x, y))
+    
+    parser.log_btmp()
+
+    col = ("user","proc","out","day","date","time","rangeTime")
+
+    frame_table = CTK.CTkFrame(master=root)
+    frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+
+    frame_buttons = CTK.CTkFrame(master = frame_table)
+    frame_buttons.pack(fill="both", expand=True)
+    
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
+    b_back.grid(row=0, column = 0, padx = 20, pady = 20)
+
+    b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="btmplog", records=records))
+    b_search.grid(row=0, column = 2, pady = 20)
+
+    table = ttk.Treeview(master=frame_table, columns=col, show="headings", selectmode="browse")
+    table.pack(fill="both", expand=True, anchor="s")
+
+    table.heading("user", text="User", anchor="n")
+    table.heading("proc", text="Proc", anchor="n")
+    table.heading("out", text="Out", anchor="n")
+    table.heading("day", text="Day", anchor="n")
+    table.heading("date", text="Date", anchor="n", command=lambda: sort_table(table, 4, False))
+    table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 5, False))
+    table.heading("rangeTime", text="RangeTime", anchor="n", command=lambda: sort_table(table, 6, False))
+
+    table.column("#1", stretch=False, width=100, anchor="center")
+    table.column("#2", stretch=False, width=100, anchor="center")
+    table.column("#3", stretch=False, width=100, anchor="center")
+    table.column("#4", stretch=False, width=100, anchor="center")
+    table.column("#5", stretch=False, width=100, anchor="center")
+    table.column("#6", stretch=False, width=100, anchor="center")
+    table.column("#7", stretch=False, width=100, anchor="center")
+
+    db.cursor.execute("SELECT * FROM btmpLogInfo")
     records = db.cursor.fetchall()
     for r in records:
         table.insert("", "end", values=r)
@@ -177,7 +222,6 @@ def main():
     text_color = root._apply_appearance_mode(CTK.ThemeManager.theme["CTkLabel"]["text_color"])
     selected_color = root._apply_appearance_mode(CTK.ThemeManager.theme["CTkButton"]["fg_color"])
 
-    # создание стиля для таблиц
     tablestyle = ttk.Style()
     tablestyle.theme_use('default')
     tablestyle.configure("Treeview", background=bg_color, foreground=text_color, fieldbackground=bg_color, borderwidth=0)
@@ -197,9 +241,12 @@ def main():
 
     b_lastlog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/wtmp", command=open_table_last_log)
     b_lastlog.grid(row=1, column = 0, padx = 20)
+    
+    b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command=open_table_btmp_log)
+    b_btmplog.grid(row=3, column = 0, padx = 20, pady = 15)
 
     b_exit = CTK.CTkButton(master=frame_with_buttons, text="exit", command=exit_app)
-    b_exit.grid(row=2, column = 0, padx = 20, pady = 30)
+    b_exit.grid(row=4, column = 0, padx = 20, pady = 30)
 
     root.mainloop()
 

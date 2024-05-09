@@ -47,3 +47,22 @@ class ParseLog():
                     ))
         self.db.insert_lastlog_db(result)
         # db.close_db()
+
+    def log_btmp(self):
+        self.cmd = "pkexec lastb"
+        # перенаправляем `stdout` и `stderr` в переменную `output`
+        output = run(self.cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
+        list = output.stdout.split("\n")
+        
+        result = []
+        for i in range(len(list)-3):
+            result.append((
+                                list[i][:9], 
+                                list[i][9:22],
+                                list[i][22:39],
+                                list[i][39:42],
+                                list[i][43:50],
+                                list[i][50:63],
+                                list[i][64:]
+                    ))
+        self.db.insert_btmplog_db(result)
