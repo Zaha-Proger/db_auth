@@ -13,10 +13,10 @@ class ParseLog():
             for i in info_os.values():
                 if "fedora" in i.lower():
                     print("Fedora")
-                    self.cmd = "pkexec cat /var/log/secure"
+                    self.cmd = "pkexec cat /var/log/secure*"
                     break
             else:
-                self.cmd = "pkexec cat /var/log/auth.log"
+                self.cmd = "pkexec cat /var/log/auth.log*"
         elif flag == 2:
             self.cmd = "last"
         elif flag == 3:
@@ -26,7 +26,7 @@ class ParseLog():
         self.get_cmd(1)
 
         # перенаправляем `stdout` и `stderr` в переменную `output`
-        output = run(self.cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
+        output = run(self.cmd, stdout=PIPE, stderr=STDOUT, text=True, shell=True)
 
         #записывается в список разделенная строка с разделителем \n
         list = output.stdout.split("\n")

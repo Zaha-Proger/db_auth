@@ -112,8 +112,6 @@ def open_table_secure_log():
     for r in records:
         table.insert("", "end", values=r)
 
-    table.config(height=len(table.get_children())) #установка размера таблицы по количеству строк в ней
-
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
 def open_table_last_log():
@@ -164,8 +162,6 @@ def open_table_last_log():
     for r in records:
         table.insert("", "end", values=r)
 
-    table.config(height=len(table.get_children())) #установка размера таблицы по количеству строк в ней
-
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
 def open_table_btmp_log():
@@ -215,8 +211,6 @@ def open_table_btmp_log():
     records = db.cursor.fetchall()
     for r in records:
         table.insert("", "end", values=r)
-
-    table.config(height=len(table.get_children())) #установка размера таблицы по количеству строк в ней
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 

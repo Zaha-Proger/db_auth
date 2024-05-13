@@ -1,9 +1,6 @@
-import platform
+from subprocess import run, STDOUT, PIPE
 
-# print(platform.freedesktop_os_release())
-info_os = platform.freedesktop_os_release()
-print(type(info_os))
-for i in info_os.values():
-    if "fedora" in i.lower():
-        print("Fedora")
-        break
+cmd = "pkexec cat /var/log/secure*"
+output = run(cmd, stdout=PIPE, stderr=STDOUT, text=True, shell=True)
+list = output.stdout.split("\n")
+print(list)
