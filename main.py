@@ -10,7 +10,7 @@ root = None
 
 def load_app():
     global db, parser
-    db = DB("./test.sqlite")
+    db = DB("./auth_db.sqlite")
     parser = ParseLog(db)
 
 def back_root(frame):

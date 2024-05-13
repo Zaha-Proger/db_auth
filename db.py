@@ -5,17 +5,17 @@ class DB:
         if path != "":
             self.db = sql.connect(path)
             self.cursor = self.db.cursor()
-            #удаление таблицы для дебага. не забуть удалить
-            self.cursor.execute("""DROP TABLE IF EXISTS authInfo""")
-            ########################################################
-            self.cursor.execute("""CREATE TABLE authInfo(
+            # #удаление таблицы для дебага. не забуть удалить
+            # self.cursor.execute("""DROP TABLE IF EXISTS authInfo""")
+            # ########################################################
+            self.cursor.execute("""CREATE TABLE IF NOT EXISTS authInfo(
                                 date TEXT,
                                 time TEXT,
                                 proc TEXT,
                                 desc TEXT
             )""")
-            self.cursor.execute("""DROP TABLE IF EXISTS lastLogInfo""")
-            self.cursor.execute("""CREATE TABLE lastLogInfo(
+            # self.cursor.execute("""DROP TABLE IF EXISTS lastLogInfo""")
+            self.cursor.execute("""CREATE TABLE IF NOT EXISTS lastLogInfo(
                                 user TEXT,
                                 proc TEXT,
                                 out TEXT,
@@ -24,8 +24,8 @@ class DB:
                                 time TEXT,
                                 rangeTime TEXT
             )""")
-            self.cursor.execute("""DROP TABLE IF EXISTS btmpLogInfo""")
-            self.cursor.execute("""CREATE TABLE btmpLogInfo(
+            # self.cursor.execute("""DROP TABLE IF EXISTS btmpLogInfo""")
+            self.cursor.execute("""CREATE TABLE IF NOT EXISTS btmpLogInfo(
                                 user TEXT,
                                 proc TEXT,
                                 out TEXT,

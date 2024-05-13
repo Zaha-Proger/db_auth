@@ -1,4 +1,5 @@
 import textwrap
+import platform
 from subprocess import run, STDOUT, PIPE
 
 class ParseLog():
@@ -6,8 +7,23 @@ class ParseLog():
         self.db = db
         self.cmd = ""
 
+    def get_cmd(self, flag):
+        if flag == 1:
+            info_os = platform.freedesktop_os_release()
+            for i in info_os.values():
+                if "fedora" in i.lower():
+                    print("Fedora")
+                    self.cmd = "pkexec cat /var/log/secure"
+                    break
+            else:
+                self.cmd = "pkexec cat /var/log/auth.log"
+        elif flag == 2:
+            self.cmd = "last"
+        elif flag == 3:
+            self.cmd = "pkexec lastb"
+
     def log_secure(self):
-        self.cmd = "pkexec cat /var/log/secure"
+        self.get_cmd(1)
 
         # перенаправляем `stdout` и `stderr` в переменную `output`
         output = run(self.cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
@@ -29,7 +45,7 @@ class ParseLog():
         self.db.insert_secure_db(result)
 
     def log_last(self):
-        self.cmd = "last"
+        self.get_cmd(2)
         # перенаправляем `stdout` и `stderr` в переменную `output`
         output = run(self.cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
         list = output.stdout.split("\n")
@@ -49,7 +65,7 @@ class ParseLog():
         # db.close_db()
 
     def log_btmp(self):
-        self.cmd = "pkexec lastb"
+        self.get_cmd(3)
         # перенаправляем `stdout` и `stderr` в переменную `output`
         output = run(self.cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
         list = output.stdout.split("\n")
