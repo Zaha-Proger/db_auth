@@ -9,17 +9,14 @@ db = None
 parser = None
 root = None
 
-def load_app(frame, password):
+def load_app():
     global db, parser
-    db = DB("./auth_db.sqlite", password)
+    db = DB("./auth_db.sqlite")
     parser = ParseLog(db)
-    create_root_win(frame)
+    create_root_win()
 
 def back_root(frame):
     frame.grid_remove()
-
-def back_root_1(frame):
-    frame.pack_forget()
 
 def exit_app():
     global db
@@ -76,10 +73,8 @@ def search(db, table, flag, records):
     b_search = CTK.CTkButton(master=search_window, width=100, text="search", command= lambda: search_in_bd(db, search_entry.get(), table, flag))
     b_search.place(relx = 0.59, rely = 0.6)
 
-def open_table_secure_log(frame):
+def open_table_secure_log():
     global db, parser, root
-
-    back_root_1(frame)
 
     x = 480
     y = 120
@@ -90,12 +85,12 @@ def open_table_secure_log(frame):
     col = ("date", "time", "proc", "desc")
 
     frame_table = CTK.CTkFrame(master=root)
-    frame_table.pack()
+    frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
 
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: create_root_win(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
     b_back.grid(row=0, column = 0,padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="secure", records= records))
@@ -121,10 +116,8 @@ def open_table_secure_log(frame):
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
-def open_table_last_log(frame):
+def open_table_last_log():
     global db, parser, root
-   
-    back_root_1(frame)
     
     x = 480
     y = 120
@@ -136,12 +129,12 @@ def open_table_last_log(frame):
     col = ("user","proc","out","day","date","time","rangeTime")
 
     frame_table = CTK.CTkFrame(master=root)
-    frame_table.pack()
+    frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
 
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: create_root_win(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
     b_back.grid(row=0, column = 0, padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="lastlog", records=records))
@@ -173,10 +166,8 @@ def open_table_last_log(frame):
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
-def open_table_btmp_log(frame):
+def open_table_btmp_log():
     global db, parser, root
-    
-    back_root_1(frame)
 
     x = 480
     y = 120
@@ -188,12 +179,12 @@ def open_table_btmp_log(frame):
     col = ("user","proc","out","day","date","time","rangeTime")
 
     frame_table = CTK.CTkFrame(master=root)
-    frame_table.pack()
+    frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
 
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: create_root_win(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
     b_back.grid(row=0, column = 0, padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="btmplog", records=records))
@@ -225,37 +216,12 @@ def open_table_btmp_log(frame):
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
-def check_pass():
-    print()
-
-def login_app():
+def create_root_win():
     global root
     root = CTK.CTk()
-    root.title("Login")
+    root.title("authDB")
     root.resizable(False, False)
 
-    frame_login = CTK.CTkFrame(master=root)
-    frame_login.pack(anchor = "center")
-    
-    text_label = CTK.CTkLabel(master=frame_login, text="enter password*")
-    text_label.pack(anchor = "n")
-    
-    pass_entry = CTK.CTkEntry(master=frame_login,  width = 250, placeholder_text="password")
-    pass_entry.pack(padx = 10 , pady = 10, anchor = "center")
-
-    info_label = CTK.CTkLabel(master=frame_login, text="*When you first log in,\nyou must create and remember a password")
-    info_label.pack(anchor = "center")
-
-    b_login = CTK.CTkButton(master=frame_login, width=100, text="login", command= lambda : load_app(frame_login, pass_entry.get()))
-    # b_login = CTK.CTkButton(master=frame_login, width=100, text="login", command= lambda : create_root_win(frame_login))
-    b_login.pack(pady = 10, anchor = "s")
-
-    root.mainloop()
-
-def create_root_win(frame):
-    global root
-    root.title("authDB")
-    back_root_1(frame)
     CTK.set_appearance_mode("System")  # Modes: system (default), light, dark
     CTK.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
@@ -272,19 +238,21 @@ def create_root_win(frame):
     tablestyle.configure('Treeview', rowheight=80)
     root.bind("<<TreeviewSelect>>", lambda event: root.focus_set())
     frame_with_buttons = CTK.CTkFrame(master=root)
-    frame_with_buttons.pack(anchor = "center")
+    frame_with_buttons.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
 
-    b_secure = CTK.CTkButton(master=frame_with_buttons, text="/var/log/secure", command=lambda: open_table_secure_log(frame_with_buttons))
+    b_secure = CTK.CTkButton(master=frame_with_buttons, text="/var/log/secure", command= open_table_secure_log)
     b_secure.grid(row=0, column = 0, padx = 20, pady = 15)
 
-    b_lastlog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/wtmp", command=lambda: open_table_last_log(frame_with_buttons))
+    b_lastlog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/wtmp", command= open_table_last_log)
     b_lastlog.grid(row=1, column = 0, padx = 20)
     
-    b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command=lambda:open_table_btmp_log(frame_with_buttons))
+    b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command= open_table_btmp_log)
     b_btmplog.grid(row=3, column = 0, padx = 20, pady = 15)
 
     b_exit = CTK.CTkButton(master=frame_with_buttons, text="exit", command=exit_app)
     b_exit.grid(row=4, column = 0, padx = 20, pady = 30)
+
+    root.mainloop()
     
 if __name__ == "__main__":
-    login_app()
+    load_app()

@@ -11,8 +11,7 @@ class ParseLog():
         if flag == 1:
             info_os = platform.freedesktop_os_release()
             for i in info_os.values():
-                if "fedora" in i.lower():
-                    print("Fedora")
+                if "fedora" or "redhat" or "centos" in i.lower():
                     self.cmd = "pkexec cat /var/log/secure*"
                     break
             else:
