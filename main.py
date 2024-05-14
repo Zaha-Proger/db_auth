@@ -3,18 +3,23 @@ import customtkinter as CTK
 from tkinter import ttk
 from db import DB
 from parserlog import ParseLog
+import tkinter
 
 db = None
 parser = None
 root = None
 
-def load_app():
+def load_app(frame, password):
     global db, parser
-    db = DB("./auth_db.sqlite")
+    db = DB("./auth_db.sqlite", password)
     parser = ParseLog(db)
+    create_root_win(frame)
 
 def back_root(frame):
     frame.grid_remove()
+
+def back_root_1(frame):
+    frame.pack_forget()
 
 def exit_app():
     global db
@@ -43,6 +48,7 @@ def cancel_search(table,records, window):
 def search(db, table, flag, records):
     search_window = CTK.CTkToplevel()
     search_window.geometry("300x100+400+300")
+    search_window.title("Search")
     search_window.resizable(False, False)
 
     search_entry = CTK.CTkEntry(master=search_window,  width = 250)
@@ -52,7 +58,6 @@ def search(db, table, flag, records):
     b_cancel.place(relx = 0.09, rely = 0.6)
 
     def search_in_bd(db, req, table, flag):
-        # req = ()
         if flag == "secure":
             db.cursor.execute("SELECT * FROM authInfo WHERE desc LIKE ? OR date LIKE ? OR proc LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "lastlog":
@@ -71,8 +76,10 @@ def search(db, table, flag, records):
     b_search = CTK.CTkButton(master=search_window, width=100, text="search", command= lambda: search_in_bd(db, search_entry.get(), table, flag))
     b_search.place(relx = 0.59, rely = 0.6)
 
-def open_table_secure_log():
+def open_table_secure_log(frame):
     global db, parser, root
+
+    back_root_1(frame)
 
     x = 480
     y = 120
@@ -83,12 +90,12 @@ def open_table_secure_log():
     col = ("date", "time", "proc", "desc")
 
     frame_table = CTK.CTkFrame(master=root)
-    frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+    frame_table.pack()
 
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: create_root_win(frame_table))
     b_back.grid(row=0, column = 0,padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="secure", records= records))
@@ -114,9 +121,11 @@ def open_table_secure_log():
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
-def open_table_last_log():
+def open_table_last_log(frame):
     global db, parser, root
    
+    back_root_1(frame)
+    
     x = 480
     y = 120
 
@@ -127,12 +136,12 @@ def open_table_last_log():
     col = ("user","proc","out","day","date","time","rangeTime")
 
     frame_table = CTK.CTkFrame(master=root)
-    frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+    frame_table.pack()
 
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: create_root_win(frame_table))
     b_back.grid(row=0, column = 0, padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="lastlog", records=records))
@@ -164,9 +173,11 @@ def open_table_last_log():
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
-def open_table_btmp_log():
+def open_table_btmp_log(frame):
     global db, parser, root
-   
+    
+    back_root_1(frame)
+
     x = 480
     y = 120
 
@@ -177,12 +188,12 @@ def open_table_btmp_log():
     col = ("user","proc","out","day","date","time","rangeTime")
 
     frame_table = CTK.CTkFrame(master=root)
-    frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+    frame_table.pack()
 
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: create_root_win(frame_table))
     b_back.grid(row=0, column = 0, padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="btmplog", records=records))
@@ -214,15 +225,39 @@ def open_table_btmp_log():
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
-def main():
+def check_pass():
+    print()
+
+def login_app():
     global root
+    root = CTK.CTk()
+    root.title("Login")
+    root.resizable(False, False)
+
+    frame_login = CTK.CTkFrame(master=root)
+    frame_login.pack(anchor = "center")
+    
+    text_label = CTK.CTkLabel(master=frame_login, text="enter password*")
+    text_label.pack(anchor = "n")
+    
+    pass_entry = CTK.CTkEntry(master=frame_login,  width = 250, placeholder_text="password")
+    pass_entry.pack(padx = 10 , pady = 10, anchor = "center")
+
+    info_label = CTK.CTkLabel(master=frame_login, text="*When you first log in,\nyou must create and remember a password")
+    info_label.pack(anchor = "center")
+
+    b_login = CTK.CTkButton(master=frame_login, width=100, text="login", command= lambda : load_app(frame_login, pass_entry.get()))
+    # b_login = CTK.CTkButton(master=frame_login, width=100, text="login", command= lambda : create_root_win(frame_login))
+    b_login.pack(pady = 10, anchor = "s")
+
+    root.mainloop()
+
+def create_root_win(frame):
+    global root
+    root.title("authDB")
+    back_root_1(frame)
     CTK.set_appearance_mode("System")  # Modes: system (default), light, dark
     CTK.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
-
-    root = CTK.CTk()
-    #root.geometry("500x400")
-    root.title("authDB")
-    root.resizable(False, False)
 
     bg_color = root._apply_appearance_mode(CTK.ThemeManager.theme["CTkFrame"]["fg_color"])
     text_color = root._apply_appearance_mode(CTK.ThemeManager.theme["CTkLabel"]["text_color"])
@@ -236,25 +271,20 @@ def main():
     tablestyle.map('Treeview.Heading', background=[('selected', bg_color)], foreground=[('selected', selected_color)])
     tablestyle.configure('Treeview', rowheight=80)
     root.bind("<<TreeviewSelect>>", lambda event: root.focus_set())
-
-    load_app()
-
     frame_with_buttons = CTK.CTkFrame(master=root)
-    frame_with_buttons.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
+    frame_with_buttons.pack(anchor = "center")
 
-    b_secure = CTK.CTkButton(master=frame_with_buttons, text="/var/log/secure", command=open_table_secure_log)
+    b_secure = CTK.CTkButton(master=frame_with_buttons, text="/var/log/secure", command=lambda: open_table_secure_log(frame_with_buttons))
     b_secure.grid(row=0, column = 0, padx = 20, pady = 15)
 
-    b_lastlog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/wtmp", command=open_table_last_log)
+    b_lastlog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/wtmp", command=lambda: open_table_last_log(frame_with_buttons))
     b_lastlog.grid(row=1, column = 0, padx = 20)
     
-    b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command=open_table_btmp_log)
+    b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command=lambda:open_table_btmp_log(frame_with_buttons))
     b_btmplog.grid(row=3, column = 0, padx = 20, pady = 15)
 
     b_exit = CTK.CTkButton(master=frame_with_buttons, text="exit", command=exit_app)
     b_exit.grid(row=4, column = 0, padx = 20, pady = 30)
-
-    root.mainloop()
-
+    
 if __name__ == "__main__":
-    main()
+    login_app()
