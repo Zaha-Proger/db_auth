@@ -1,5 +1,6 @@
 import textwrap
 import platform
+from os import path
 from subprocess import run, STDOUT, PIPE
 
 class ParseLog():
@@ -9,11 +10,8 @@ class ParseLog():
 
     def get_cmd(self, flag):
         if flag == 1:
-            info_os = platform.freedesktop_os_release()
-            for i in info_os.values():
-                if "fedora" or "redhat" or "centos" in i.lower():
-                    self.cmd = "pkexec cat /var/log/secure*"
-                    break
+            if path.exists("/var/log/secure"):
+                self.cmd = "pkexec cat /var/log/secure*"
             else:
                 self.cmd = "pkexec cat /var/log/auth.log*"
         elif flag == 2:

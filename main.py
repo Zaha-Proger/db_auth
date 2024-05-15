@@ -126,7 +126,7 @@ def open_table_last_log():
     
     parser.log_last()
 
-    col = ("user","proc","out","day","date","time","rangeTime")
+    col = ("user","tty","host","day","date","time","session")
 
     frame_table = CTK.CTkFrame(master=root)
     frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
@@ -144,12 +144,12 @@ def open_table_last_log():
     table.pack(fill="both", expand=True, anchor="s")
 
     table.heading("user", text="User", anchor="n")
-    table.heading("proc", text="Proc", anchor="n")
-    table.heading("out", text="Out", anchor="n")
+    table.heading("tty", text="Tty", anchor="n")
+    table.heading("host", text="Host", anchor="n")
     table.heading("day", text="Day", anchor="n")
     table.heading("date", text="Date", anchor="n", command=lambda: sort_table(table, 4, False))
     table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 5, False))
-    table.heading("rangeTime", text="RangeTime", anchor="n", command=lambda: sort_table(table, 6, False))
+    table.heading("session", text="Session", anchor="n", command=lambda: sort_table(table, 6, False))
 
     table.column("#1", stretch=False, width=100, anchor="center")
     table.column("#2", stretch=False, width=100, anchor="center")
@@ -176,7 +176,8 @@ def open_table_btmp_log():
     
     parser.log_btmp()
 
-    col = ("user","proc","out","day","date","time","rangeTime")
+    col = ("user","tty","host","day","date","time","session")
+
 
     frame_table = CTK.CTkFrame(master=root)
     frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
@@ -194,12 +195,12 @@ def open_table_btmp_log():
     table.pack(fill="both", expand=True, anchor="s")
 
     table.heading("user", text="User", anchor="n")
-    table.heading("proc", text="Proc", anchor="n")
-    table.heading("out", text="Out", anchor="n")
+    table.heading("tty", text="Tty", anchor="n")
+    table.heading("host", text="Host", anchor="n")
     table.heading("day", text="Day", anchor="n")
     table.heading("date", text="Date", anchor="n", command=lambda: sort_table(table, 4, False))
     table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 5, False))
-    table.heading("rangeTime", text="RangeTime", anchor="n", command=lambda: sort_table(table, 6, False))
+    table.heading("session", text="Session", anchor="n", command=lambda: sort_table(table, 6, False))
 
     table.column("#1", stretch=False, width=100, anchor="center")
     table.column("#2", stretch=False, width=100, anchor="center")

@@ -13,21 +13,21 @@ class DB:
             )""")
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS lastLogInfo(
                                 user TEXT,
-                                proc TEXT,
-                                out TEXT,
+                                tty TEXT,
+                                host TEXT,
                                 day TEXT,
                                 date TEXT,
                                 time TEXT,
-                                rangeTime TEXT
+                                session TEXT
             )""")
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS btmpLogInfo(
                                 user TEXT,
-                                proc TEXT,
-                                out TEXT,
+                                tty TEXT,
+                                host TEXT,
                                 day TEXT,
                                 date TEXT,
                                 time TEXT,
-                                rangeTime TEXT
+                                session TEXT
             )""")
             self.db.commit()
         else:
