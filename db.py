@@ -40,12 +40,12 @@ class DB:
 
     def insert_lastlog_db(self, lastlog_list):
         self.cursor.executemany("INSERT INTO lastLogInfo VALUES (?,?,?,?,?,?,?)", lastlog_list)
-        self.cursor.execute("DELETE FROM lastLogInfo  WHERE rowid NOT IN (SELECT MIN(rowid) FROM lastLogInfo GROUP BY user, proc,out,day,date,time,rangeTime);")
+        self.cursor.execute("DELETE FROM lastLogInfo  WHERE rowid NOT IN (SELECT MIN(rowid) FROM lastLogInfo GROUP BY user,tty,host,day,date,time,session);")
         self.db.commit()
 
     def insert_btmplog_db(self, btmplog_list):
         self.cursor.executemany("INSERT INTO btmpLogInfo VALUES (?,?,?,?,?,?,?)", btmplog_list)
-        self.cursor.execute("DELETE FROM btmpLogInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM btmpLogInfo GROUP BY user, proc,out,day,date,time,rangeTime);")
+        self.cursor.execute("DELETE FROM btmpLogInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM btmpLogInfo GROUP BY user,tty,host,day,date,time,session);")
         self.db.commit()
 
     def close_db(self):
