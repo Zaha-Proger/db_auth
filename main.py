@@ -56,7 +56,7 @@ def search(db, table, flag, records):
             db.cursor.execute("SELECT * FROM authInfo WHERE desc LIKE ? OR date LIKE ? OR proc LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "lastlog":
             db.cursor.execute("SELECT * FROM lastLogInfo WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
-        elif flag == "log_btmp":
+        elif flag == "btmplog":
             db.cursor.execute("SELECT * FROM btmpLogInfo WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR sessiom LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
         results = db.cursor.fetchall()
         # Очистка результатов
