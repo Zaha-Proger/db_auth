@@ -21,23 +21,34 @@ class ParseLog():
 
     def log_secure(self):
         self.get_cmd(1)
-
+        info_os = platform.freedesktop_os_release()
         # перенаправляем `stdout` и `stderr` в переменную `output`
         output = run(self.cmd, stdout=PIPE, stderr=STDOUT, text=True, shell=True)
-
-        #записывается в список разделенная строка с разделителем \n
-        list = output.stdout.split("\n")
-
-        # заполнение списка списков, где каждый элемент -- строка, разбитая на части
-        result = []
-        for i in range(len(list)-1):
-            text = textwrap.dedent(list[i][list[i].find(':', 15)+2:]).strip()
-            result.append((
-                        list[i][:6], 
-                        list[i][7:15],
-                        list[i][16:list[i].find(':', 15)],
-                        textwrap.fill(text, width=120)
-            ))
+        for i in info_os.values():
+            if "debian" in i.lower():
+                list = output.stdout.split("\n")
+                result = []
+                for i in range(len(list)-1):
+                    text = textwrap.dedent(list[i][list[i].find(':', 40)+2:]).strip()
+                    result.append((
+                                list[i][:10], 
+                                list[i][11:27],
+                                list[i][40:list[i].find(' ', 40)],
+                                textwrap.fill(text, width=120)
+                    ))
+                break
+        else:
+            #записывается в список разделенная строка с разделителем \n
+            list = output.stdout.split("\n")
+            result = []
+            for i in range(len(list)-1):
+                text = textwrap.dedent(list[i][list[i].find(':', 15)+2:]).strip()
+                result.append((
+                            list[i][:6], 
+                            list[i][7:15],
+                            list[i][22:list[i].find(':', 21)],
+                            textwrap.fill(text, width=120)
+                ))
 
         self.db.insert_secure_db(result)
 

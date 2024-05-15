@@ -3,7 +3,6 @@ import customtkinter as CTK
 from tkinter import ttk
 from db import DB
 from parserlog import ParseLog
-import tkinter
 
 db = None
 parser = None
