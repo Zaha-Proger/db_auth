@@ -14,10 +14,7 @@ def load_app():
     db = DB("./auth_db.sqlite")
     parser = ParseLog(db)
     create_root_win()
-
-def back_root(frame):
-    frame.grid_remove()
-
+    
 def exit_app():
     global db
     db.close_db()
@@ -58,9 +55,9 @@ def search(db, table, flag, records):
         if flag == "secure":
             db.cursor.execute("SELECT * FROM authInfo WHERE desc LIKE ? OR date LIKE ? OR proc LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "lastlog":
-            db.cursor.execute("SELECT * FROM lastLogInfo WHERE user LIKE ? OR proc LIKE ? OR out LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR rangeTime LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
+            db.cursor.execute("SELECT * FROM lastLogInfo WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "log_btmp":
-            db.cursor.execute("SELECT * FROM btmpLogInfo WHERE user LIKE ? OR proc LIKE ? OR out LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR rangeTime LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
+            db.cursor.execute("SELECT * FROM btmpLogInfo WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR sessiom LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
         results = db.cursor.fetchall()
         # Очистка результатов
         for item in table.get_children():
@@ -90,7 +87,7 @@ def open_table_secure_log():
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: frame_table.grid_remove())
     b_back.grid(row=0, column = 0,padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="secure", records= records))
@@ -134,7 +131,7 @@ def open_table_last_log():
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: frame_table.grid_remove())
     b_back.grid(row=0, column = 0, padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="lastlog", records=records))
@@ -185,7 +182,7 @@ def open_table_btmp_log():
     frame_buttons = CTK.CTkFrame(master = frame_table)
     frame_buttons.pack(fill="both", expand=True)
     
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: back_root(frame_table))
+    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: frame_table.grid_remove())
     b_back.grid(row=0, column = 0, padx = 20, pady = 20)
 
     b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="btmplog", records=records))
