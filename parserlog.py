@@ -18,7 +18,6 @@ class ParseLog():
             self.cmd = "last"
         elif flag == 3:
             self.cmd = "pkexec lastb"
-            print("a")
 
     def log_secure(self):
         self.get_cmd(1)
@@ -41,19 +40,28 @@ class ParseLog():
         else:
             #записывается в список разделенная строка с разделителем \n
             list = output.stdout.split("\n")
-            result = []
+            result_date = []
+            result_info = []
             for i in range(len(list)-1):
                 text = textwrap.dedent(list[i][list[i].find(':', 15)+2:]).strip()
-                result.append((
-                            list[i][:6], 
-                            list[i][7:15],
-                            list[i][22:list[i].find(':', 21)],
-                            textwrap.fill(text, width=120)
+                month = list[i][:3]
+                day = list[i][4:6]
+                result_date.append((
+                    month,
+                    day,
+                    "NULL"
                 ))
+                result_info.append((
+                    month,
+                    day,
+                    list[i][7:15],
+                    list[i][22:list[i].find(':', 21)],
+                    textwrap.fill(text, width=120)
+                ))
+        self.db.insert_date_db(tuple(set(result_date)))
+        self.db.insert_secure_db(result_info)
 
-        self.db.insert_secure_db(result)
-
-    def log_last(self):
+    def log_BWtmp(self):
         self.get_cmd(2)
         # перенаправляем `stdout` и `stderr` в переменную `output`
         output = run(self.cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
@@ -73,21 +81,21 @@ class ParseLog():
         self.db.insert_lastlog_db(result)
         # db.close_db()
 
-    def log_btmp(self):
-        self.get_cmd(3)
-        # перенаправляем `stdout` и `stderr` в переменную `output`
-        output = run(self.cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
-        list = output.stdout.split("\n")
+    # def log_btmp(self):
+    #     self.get_cmd(3)
+    #     # перенаправляем `stdout` и `stderr` в переменную `output`
+    #     output = run(self.cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
+    #     list = output.stdout.split("\n")
         
-        result = []
-        for i in range(len(list)-3):
-            result.append((
-                                list[i][:9], 
-                                list[i][9:22],
-                                list[i][22:39],
-                                list[i][39:42],
-                                list[i][43:50],
-                                list[i][50:63],
-                                list[i][64:]
-                    ))
-        self.db.insert_btmplog_db(result)
+    #     result = []
+    #     for i in range(len(list)-3):
+    #         result.append((
+    #                             list[i][:9], 
+    #                             list[i][9:22],
+    #                             list[i][22:39],
+    #                             list[i][39:42],
+    #                             list[i][43:50],
+    #                             list[i][50:63],
+    #                             list[i][64:]
+    #                 ))
+    #     self.db.insert_btmplog_db(result)
