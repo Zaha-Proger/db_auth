@@ -18,6 +18,7 @@ class ParseLog():
             self.cmd = "last"
         elif flag == 3:
             self.cmd = "pkexec lastb"
+            print("a")
 
     def log_secure(self):
         self.get_cmd(1)
