@@ -12,7 +12,13 @@ def load_app():
     global db, parser
     db = DB("./auth_db.sqlite")
     parser = ParseLog(db)
+    update_db()
     create_root_win()
+
+def update_db():
+    parser.log_secure()
+    parser.log_BWtmp("wtmp")
+    parser.log_BWtmp("btmp")
     
 def exit_app():
     global db
@@ -20,14 +26,10 @@ def exit_app():
     exit()
 
 def sort_table(table,col, reverse):
-    # получаем все значения столбцов в виде отдельного списка
     l = [(table.set(k, col), k) for k in table.get_children("")]
-    # сортируем список
     l.sort(reverse=reverse)
-    # переупорядочиваем значения в отсортированном порядке
     for index,  (_, k) in enumerate(l):
         table.move(k, "", index)
-#    в следующий раз выполняем сортировку в обратном порядке
     table.heading(col, command=lambda: sort_table(table, col, not reverse))
 
 def cancel_search(table,records, window):
@@ -58,11 +60,10 @@ def search(db, table, flag, records):
         elif flag == "btmplog":
             db.cursor.execute("SELECT * FROM btmpLogInfo WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
         results = db.cursor.fetchall()
-        # Очистка результатов
+
         for item in table.get_children():
             table.delete(item)
 
-        # Отображение результатов в таблице
         for row in results:
             table.insert('', 'end', values=row)
     
@@ -77,8 +78,7 @@ def open_table_secure_log():
 
     root.wm_geometry("+%d+%d" % (x, y))
 
-    parser.log_secure()
-    col = ("date", "time", "proc", "desc")
+    col = ("month","day", "time", "proc", "desc")
 
     frame_table = CTK.CTkFrame(master=root)
     frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
@@ -95,17 +95,19 @@ def open_table_secure_log():
     table = ttk.Treeview(master=frame_table, columns=col, show="headings", selectmode="browse")
     table.pack(fill="both", expand=True, anchor="s")
 
-    table.heading("date", text="Date", anchor="n", command=lambda: sort_table(table, 0, False))
-    table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 1, False))
+    table.heading("month", text="DayOFweek", anchor="n")
+    table.heading("day", text="DayOFweek", anchor="n")
+    table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 2, False))
     table.heading("proc", text="Process", anchor="n")
     table.heading("desc", text="Description", anchor="n")
 
     table.column("#1", stretch=False, width=100, anchor="center")
     table.column("#2", stretch=False, width=100, anchor="center")
-    table.column("#3", stretch=False, width=300, anchor="center")
-    table.column("#4", stretch=False, width=800)
+    table.column("#3", stretch=False, width=100, anchor="center")
+    table.column("#4", stretch=False, width=300, anchor="center")
+    table.column("#5", stretch=False, width=800)
 
-    db.cursor.execute("SELECT * FROM authInfo")
+    db.cursor.execute("SELECT * FROM authInfo_with_date")
     records = db.cursor.fetchall()
     for r in records:
         table.insert("", "end", values=r)
@@ -246,8 +248,11 @@ def create_root_win():
     b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command= open_table_btmp_log)
     b_btmplog.grid(row=3, column = 0, padx = 20, pady = 15)
 
+    b_updateDB = CTK.CTkButton(master=frame_with_buttons, text="update_DB", command= update_db)
+    b_updateDB.grid(row=4, column = 0, padx = 20, pady = 15)
+
     b_exit = CTK.CTkButton(master=frame_with_buttons, text="exit", command=exit_app)
-    b_exit.grid(row=4, column = 0, padx = 20, pady = 30)
+    b_exit.grid(row=5, column = 0, padx = 20, pady = 30)
 
     root.mainloop()
     

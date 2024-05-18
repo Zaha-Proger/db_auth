@@ -8,8 +8,7 @@ class DB:
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS date(
                                 id_date INTEGER PRIMARY KEY AUTOINCREMENT,
                                 month TEXT,
-                                day TEXT,
-                                day_week TEXT NULL
+                                day TEXT
             )""")
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS authInfo(
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,6 +29,45 @@ class DB:
                                 flag BOOL,
                                 FOREIGN KEY (date_id) REFERENCES date (id_date)
             )""")
+            self.cursor.execute("""CREATE VIEW IF NOT EXISTS wtmp_with_date AS
+                                SELECT
+                                    btmp_wtmpInfo.user,
+                                    btmp_wtmpInfo.tty,
+                                    btmp_wtmpInfo.host,
+                                    date.month,
+                                    date.day,
+                                    btmp_wtmpInfo.time,
+                                    btmp_wtmpInfo.session 
+                                FROM btmp_wtmpInfo
+                                    INNER JOIN date
+                                    ON btmp_wtmpInfo.date_id = date.id_date
+                                WHERE btmp_wtmpInfo.FLAG = 0
+            """)
+            self.cursor.execute("""CREATE VIEW IF NOT EXISTS btmp_with_date AS
+                                SELECT
+                                    btmp_wtmpInfo.user,
+                                    btmp_wtmpInfo.tty,
+                                    btmp_wtmpInfo.host,
+                                    date.month,
+                                    date.day,
+                                    btmp_wtmpInfo.time,
+                                    btmp_wtmpInfo.session 
+                                FROM btmp_wtmpInfo
+                                    INNER JOIN date
+                                    ON btmp_wtmpInfo.date_id = date.id_date
+                                WHERE btmp_wtmpInfo.FLAG = 1
+            """)
+            self.cursor.execute("""CREATE VIEW IF NOT EXISTS authInfo_with_date AS
+                                SELECT
+                                    date.month,
+                                    date.day,
+                                    time TEXT,
+                                    proc TEXT,
+                                    desc TEXT
+                                FROM authInfo
+                                    INNER JOIN date
+                                    ON authInfo.date_id = date.id_date
+            """)
             self.db.commit()
         else:
             print("Not path for DB")
@@ -38,24 +76,22 @@ class DB:
         for i in range(len(info_list)-1):
             self.cursor.execute(f"SELECT id_date FROM date WHERE month = '{info_list[i][0]}' AND day = '{info_list[i][1]}'")
             id_date = self.cursor.fetchone()
-            self.cursor.execute(f"INSERT INTO authInfo (date_id, time, proc, desc) VALUES (?,?,?,?)", (int(id_date), info_list[i][2], info_list[i][3], info_list[i][4]))
-        self.cursor.execute("DELETE FROM authInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM authInfo GROUP BY date, time, proc, desc);")
+            self.cursor.execute(f"INSERT INTO authInfo (date_id, time, proc, desc) VALUES (?,?,?,?)", (int(id_date[0]), info_list[i][2], info_list[i][3], info_list[i][4]))
+        self.cursor.execute("DELETE FROM authInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM authInfo GROUP BY date_id, time, proc, desc);")
         self.db.commit()
 
-    def insert_BWtmp_db(self, info_list, flag):
-        self.cursor.executemany("INSERT INTO btmp_wtmpInfo VALUES (?,?,?,?,?,?,?)", info_list)
-        self.cursor.execute("DELETE FROM btmp_wtmpInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM btmp_wtmpInfo GROUP BY user,tty,host,day,date,time,session);")
+    def insert_bWtmp_db(self, info_list, flag):
+        for i in range(len(info_list)-2):
+            self.cursor.execute(f"SELECT id_date FROM date WHERE month = '{info_list[i][4]}' AND day = '{info_list[i][5]}'")
+            id_date = self.cursor.fetchone()
+            self.cursor.execute(f"INSERT INTO btmp_wtmpInfo (user, tty, host, date_id, time, session, flag) VALUES (?, ?, ?, ?, ?, ?, ?)", (info_list[i][0],info_list[i][1],info_list[i][2], int(id_date[0]),info_list[i][6], info_list[i][7], flag))
+        self.cursor.execute("DELETE FROM btmp_wtmpInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM btmp_wtmpInfo GROUP BY user, tty, host, date_id, time, session, flag);")
         self.db.commit()
-    
+        
     def insert_date_db(self, info_list):
-        self.cursor.executemany("REPLACE INTO date (month, day, day_week) VALUES (?, ?, ?)", info_list)
-        self.cursor.execute("DELETE FROM date  WHERE rowid NOT IN (SELECT MIN(rowid) FROM date GROUP BY month, day, day_week);")
+        self.cursor.executemany("INSERT INTO date (month, day) VALUES (?, ?)", info_list)
+        self.cursor.execute("DELETE FROM date  WHERE rowid NOT IN (SELECT MIN(rowid) FROM date GROUP BY month, day);")
         self.db.commit()
-
-    # def insert_btmplog_db(self, btmplog_list):
-    #     self.cursor.executemany("INSERT INTO btmpLogInfo VALUES (?,?,?,?,?,?,?)", btmplog_list)
-    #     self.cursor.execute("DELETE FROM btmpLogInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM btmpLogInfo GROUP BY user,tty,host,day,date,time,session);")
-    #     self.db.commit()
 
     def close_db(self):
         self.cursor.close()
