@@ -50,18 +50,20 @@ class ParseLog():
         for i in info_os.values():
             if "debian" in i.lower():
                 list = output.stdout.split("\n")
-                result = []
+                result_date = []
+                result_info = []
                 for i in range(len(list)-1):
                     text = textwrap.dedent(list[i][list[i].find(':', 40)+2:]).strip()
-                    result.append((
-                                list[i][:10], 
-                                list[i][11:27],
+                    date = list[i][:10]
+                    result_date.append((date))
+                    result_info.append((
+                                date,
+                                list[i][11:19],
                                 list[i][40:list[i].find(' ', 40)],
                                 textwrap.fill(text, width=120)
                     ))
                 break
         else:
-            #записывается в список разделенная строка с разделителем \n
             list = output.stdout.split("\n")
             result_date = []
             result_info = []
@@ -97,8 +99,7 @@ class ParseLog():
             result_info.append((
                 list[i][:9], 
                 list[i][9:22], 
-                list[i][22:39], 
-                # list[i][39:42], 
+                list[i][22:39],  
                 self.convert_date(month, day), 
                 list[i][50:63], 
                 list[i][64:]

@@ -85,7 +85,7 @@ class DB:
         self.db.commit()
         
     def insert_date_db(self, info_list):
-        for i in range(len(info_list)-1):
+        for i in range(len(info_list)):
             self.cursor.execute(f"INSERT INTO date (date) VALUES ('{info_list[i]}')")
         self.cursor.execute("DELETE FROM date  WHERE rowid NOT IN (SELECT MIN(rowid) FROM date GROUP BY date);")
         self.db.commit()
