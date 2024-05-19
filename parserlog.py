@@ -1,12 +1,43 @@
 import textwrap
 import platform
 from os import path
+import datetime
 from subprocess import run, STDOUT, PIPE
 
 class ParseLog():
     
     def __init__(self, db):
         self.db = db
+
+    def convert_date(self, month, day):
+        year = str(datetime.datetime.now())[:4]
+        if month == "Jun":
+            month = "01"
+        elif month == "Feb":
+            month = "02"
+        elif month == "Mar":
+            month = "03"
+        elif month == "Apr":
+            month = "04"
+        elif month == "May":
+            month = "05"
+        elif month == "Jun":
+            month = "06"
+        elif month == "Jul":
+            month = "07"
+        elif month == "Aug":
+            month = "08"
+        elif month == "Sep":
+            month = "09"
+        elif month == "Oct":
+            month = "10"
+        elif month == "Nov":
+            month = "11"
+        elif month == "Dec":
+            month = "12"
+        day = day.replace(" ", "0")
+        date = year+"-"+month+"-"+day
+        return date
 
     def log_secure(self):
         if path.exists("/var/log/secure"):
@@ -38,13 +69,9 @@ class ParseLog():
                 text = textwrap.dedent(list[i][list[i].find(':', 15)+2:]).strip()
                 month = list[i][:3]
                 day = list[i][4:6]
-                result_date.append((
-                    month,
-                    day
-                ))
+                result_date.append((self.convert_date(month, day)))
                 result_info.append((
-                    month,
-                    day,
+                    self.convert_date(month, day),
                     list[i][7:15],
                     list[i][22:list[i].find(':', 21)],
                     textwrap.fill(text, width=120)
@@ -57,26 +84,22 @@ class ParseLog():
             cmd = "last"
             fwb = False
         elif flag == "btmp":
-            cmd = "lastb"
+            cmd = "pkexec lastb"
             fwb = True
         output = run(cmd.split(), stdout=PIPE, stderr=STDOUT, text=True)
         list = output.stdout.split("\n")
         result_info = []
         result_date = []
-        for i in range(len(list)-2):
+        for i in range(len(list)-1):
             month = list[i][43:46]
             day = list[i][47:49]
-            result_date.append((
-                month,
-                day
-            ))
+            result_date.append((self.convert_date(month, day)))
             result_info.append((
                 list[i][:9], 
                 list[i][9:22], 
                 list[i][22:39], 
-                list[i][39:42], 
-                list[i][43:46], 
-                list[i][47:49], 
+                # list[i][39:42], 
+                self.convert_date(month, day), 
                 list[i][50:63], 
                 list[i][64:]
             ))

@@ -54,11 +54,22 @@ def search(db, table, flag, records):
 
     def search_in_bd(db, req, table, flag):
         if flag == "secure":
-            db.cursor.execute("SELECT * FROM authInfo WHERE desc LIKE ? OR date LIKE ? OR proc LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%',))
+            if ":" in req:
+                print(req[:10], req[11:])
+                db.cursor.execute(f"SELECT * FROM authInfo_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
+            else: db.cursor.execute("SELECT * FROM authInfo_with_date WHERE desc LIKE ? OR date LIKE ? OR proc LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "lastlog":
-            db.cursor.execute("SELECT * FROM lastLogInfo WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
+            if ":" in req:
+                print(req[:10], req[11:])
+                db.cursor.execute(f"SELECT * FROM wtmp_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
+            else:
+                db.cursor.execute("SELECT * FROM wtmp_with_date WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "btmplog":
-            db.cursor.execute("SELECT * FROM btmpLogInfo WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR day LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
+            if ":" in req:
+                print(req[:10], req[11:])
+                db.cursor.execute(f"SELECT * FROM btmp_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
+            else:
+                db.cursor.execute("SELECT * FROM btmp_with_date WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
         results = db.cursor.fetchall()
 
         for item in table.get_children():
@@ -78,7 +89,7 @@ def open_table_secure_log():
 
     root.wm_geometry("+%d+%d" % (x, y))
 
-    col = ("month","day", "time", "proc", "desc")
+    col = ("date", "time", "proc", "desc")
 
     frame_table = CTK.CTkFrame(master=root)
     frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
@@ -95,17 +106,15 @@ def open_table_secure_log():
     table = ttk.Treeview(master=frame_table, columns=col, show="headings", selectmode="browse")
     table.pack(fill="both", expand=True, anchor="s")
 
-    table.heading("month", text="DayOFweek", anchor="n")
-    table.heading("day", text="DayOFweek", anchor="n")
-    table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 2, False))
+    table.heading("date", text="Date", anchor="n", command=lambda: sort_table(table, 0, False))
+    table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 1, False))
     table.heading("proc", text="Process", anchor="n")
     table.heading("desc", text="Description", anchor="n")
 
     table.column("#1", stretch=False, width=100, anchor="center")
     table.column("#2", stretch=False, width=100, anchor="center")
-    table.column("#3", stretch=False, width=100, anchor="center")
-    table.column("#4", stretch=False, width=300, anchor="center")
-    table.column("#5", stretch=False, width=800)
+    table.column("#3", stretch=False, width=300, anchor="center")
+    table.column("#4", stretch=False, width=800)
 
     db.cursor.execute("SELECT * FROM authInfo_with_date")
     records = db.cursor.fetchall()
@@ -114,17 +123,15 @@ def open_table_secure_log():
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
-def open_table_last_log():
+def open_table_bWtmp_log(flag):
     global db, parser, root
     
     x = 480
     y = 120
 
     root.wm_geometry("+%d+%d" % (x, y))
-    
-    parser.log_last()
 
-    col = ("user","tty","host","day","date","time","session")
+    col = ("user","tty","host","date","time","session")
 
     frame_table = CTK.CTkFrame(master=root)
     frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
@@ -144,10 +151,9 @@ def open_table_last_log():
     table.heading("user", text="User", anchor="n")
     table.heading("tty", text="Tty", anchor="n")
     table.heading("host", text="Host", anchor="n")
-    table.heading("day", text="Day", anchor="n")
-    table.heading("date", text="Date", anchor="n", command=lambda: sort_table(table, 4, False))
-    table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 5, False))
-    table.heading("session", text="Session", anchor="n", command=lambda: sort_table(table, 6, False))
+    table.heading("date", text="Date", anchor="n", command=lambda: sort_table(table, 3, False))
+    table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 4, False))
+    table.heading("session", text="Session", anchor="n", command=lambda: sort_table(table, 5, False))
 
     table.column("#1", stretch=False, width=100, anchor="center")
     table.column("#2", stretch=False, width=100, anchor="center")
@@ -155,63 +161,17 @@ def open_table_last_log():
     table.column("#4", stretch=False, width=100, anchor="center")
     table.column("#5", stretch=False, width=100, anchor="center")
     table.column("#6", stretch=False, width=100, anchor="center")
-    table.column("#7", stretch=False, width=100, anchor="center")
 
-    db.cursor.execute("SELECT * FROM lastLogInfo")
-    records = db.cursor.fetchall()
-    for r in records:
-        table.insert("", "end", values=r)
-
-    table.bind('<Motion>', 'break') #запрет изменения размера столбцов
-
-def open_table_btmp_log():
-    global db, parser, root
-
-    x = 480
-    y = 120
-
-    root.wm_geometry("+%d+%d" % (x, y))
-    
-    parser.log_btmp()
-
-    col = ("user","tty","host","day","date","time","session")
-
-
-    frame_table = CTK.CTkFrame(master=root)
-    frame_table.grid(row=0, column=0, padx=5, pady=5, sticky="nsew")
-
-    frame_buttons = CTK.CTkFrame(master = frame_table)
-    frame_buttons.pack(fill="both", expand=True)
-    
-    b_back = CTK.CTkButton(master=frame_buttons, text="back", command= lambda: frame_table.grid_remove())
-    b_back.grid(row=0, column = 0, padx = 20, pady = 20)
-
-    b_search = CTK.CTkButton(master=frame_buttons, text="search", command= lambda: search(db, table=table, flag="btmplog", records=records))
-    b_search.grid(row=0, column = 2, pady = 20)
-
-    table = ttk.Treeview(master=frame_table, columns=col, show="headings", selectmode="browse")
-    table.pack(fill="both", expand=True, anchor="s")
-
-    table.heading("user", text="User", anchor="n")
-    table.heading("tty", text="Tty", anchor="n")
-    table.heading("host", text="Host", anchor="n")
-    table.heading("day", text="Day", anchor="n")
-    table.heading("date", text="Date", anchor="n", command=lambda: sort_table(table, 4, False))
-    table.heading("time", text="Time", anchor="n", command=lambda: sort_table(table, 5, False))
-    table.heading("session", text="Session", anchor="n", command=lambda: sort_table(table, 6, False))
-
-    table.column("#1", stretch=False, width=100, anchor="center")
-    table.column("#2", stretch=False, width=100, anchor="center")
-    table.column("#3", stretch=False, width=100, anchor="center")
-    table.column("#4", stretch=False, width=100, anchor="center")
-    table.column("#5", stretch=False, width=100, anchor="center")
-    table.column("#6", stretch=False, width=100, anchor="center")
-    table.column("#7", stretch=False, width=100, anchor="center")
-
-    db.cursor.execute("SELECT * FROM btmpLogInfo")
-    records = db.cursor.fetchall()
-    for r in records:
-        table.insert("", "end", values=r)
+    if flag == "wtmp":
+        db.cursor.execute("SELECT * FROM wtmp_with_date")
+        records = db.cursor.fetchall()
+        for r in records:
+            table.insert("", "end", values=r)
+    elif flag == "btmp":
+        db.cursor.execute("SELECT * FROM btmp_with_date")
+        records = db.cursor.fetchall()
+        for r in records:
+            table.insert("", "end", values=r)
 
     table.bind('<Motion>', 'break') #запрет изменения размера столбцов
 
@@ -242,10 +202,10 @@ def create_root_win():
     b_secure = CTK.CTkButton(master=frame_with_buttons, text="/var/log/secure", command= open_table_secure_log)
     b_secure.grid(row=0, column = 0, padx = 20, pady = 15)
 
-    b_lastlog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/wtmp", command= open_table_last_log)
+    b_lastlog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/wtmp", command= lambda: open_table_bWtmp_log("wtmp"))
     b_lastlog.grid(row=1, column = 0, padx = 20)
     
-    b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command= open_table_btmp_log)
+    b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command= lambda: open_table_bWtmp_log("btmp"))
     b_btmplog.grid(row=3, column = 0, padx = 20, pady = 15)
 
     b_updateDB = CTK.CTkButton(master=frame_with_buttons, text="update_DB", command= update_db)

@@ -7,8 +7,7 @@ class DB:
             self.cursor = self.db.cursor()
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS date(
                                 id_date INTEGER PRIMARY KEY AUTOINCREMENT,
-                                month TEXT,
-                                day TEXT
+                                date TEXT
             )""")
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS authInfo(
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,13 +30,12 @@ class DB:
             )""")
             self.cursor.execute("""CREATE VIEW IF NOT EXISTS wtmp_with_date AS
                                 SELECT
-                                    btmp_wtmpInfo.user,
-                                    btmp_wtmpInfo.tty,
-                                    btmp_wtmpInfo.host,
-                                    date.month,
-                                    date.day,
-                                    btmp_wtmpInfo.time,
-                                    btmp_wtmpInfo.session 
+                                    btmp_wtmpInfo.user AS user,
+                                    btmp_wtmpInfo.tty AS tty,
+                                    btmp_wtmpInfo.host AS host,
+                                    date.date AS date,
+                                    btmp_wtmpInfo.time AS time,
+                                    btmp_wtmpInfo.session AS session 
                                 FROM btmp_wtmpInfo
                                     INNER JOIN date
                                     ON btmp_wtmpInfo.date_id = date.id_date
@@ -45,13 +43,12 @@ class DB:
             """)
             self.cursor.execute("""CREATE VIEW IF NOT EXISTS btmp_with_date AS
                                 SELECT
-                                    btmp_wtmpInfo.user,
-                                    btmp_wtmpInfo.tty,
-                                    btmp_wtmpInfo.host,
-                                    date.month,
-                                    date.day,
-                                    btmp_wtmpInfo.time,
-                                    btmp_wtmpInfo.session 
+                                    btmp_wtmpInfo.user AS user,
+                                    btmp_wtmpInfo.tty AS tty,
+                                    btmp_wtmpInfo.host AS host,
+                                    date.date AS date,
+                                    btmp_wtmpInfo.time AS time,
+                                    btmp_wtmpInfo.session AS session 
                                 FROM btmp_wtmpInfo
                                     INNER JOIN date
                                     ON btmp_wtmpInfo.date_id = date.id_date
@@ -59,11 +56,10 @@ class DB:
             """)
             self.cursor.execute("""CREATE VIEW IF NOT EXISTS authInfo_with_date AS
                                 SELECT
-                                    date.month,
-                                    date.day,
-                                    time TEXT,
-                                    proc TEXT,
-                                    desc TEXT
+                                    date.date AS date,
+                                    authInfo.time AS time,
+                                    authInfo.proc AS proc,
+                                    authInfo.desc AS desc
                                 FROM authInfo
                                     INNER JOIN date
                                     ON authInfo.date_id = date.id_date
@@ -73,24 +69,25 @@ class DB:
             print("Not path for DB")
 
     def insert_secure_db(self, info_list):
-        for i in range(len(info_list)-1):
-            self.cursor.execute(f"SELECT id_date FROM date WHERE month = '{info_list[i][0]}' AND day = '{info_list[i][1]}'")
+        for i in range(len(info_list)-2):
+            self.cursor.execute(f"SELECT id_date FROM date WHERE  date = ('{info_list[i][0]}')")
             id_date = self.cursor.fetchone()
-            self.cursor.execute(f"INSERT INTO authInfo (date_id, time, proc, desc) VALUES (?,?,?,?)", (int(id_date[0]), info_list[i][2], info_list[i][3], info_list[i][4]))
+            self.cursor.execute("INSERT INTO authInfo (date_id, time, proc, desc) VALUES (?,?,?,?)", (int(id_date[0]), info_list[i][1], info_list[i][2], info_list[i][3]))
         self.cursor.execute("DELETE FROM authInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM authInfo GROUP BY date_id, time, proc, desc);")
         self.db.commit()
 
     def insert_bWtmp_db(self, info_list, flag):
         for i in range(len(info_list)-2):
-            self.cursor.execute(f"SELECT id_date FROM date WHERE month = '{info_list[i][4]}' AND day = '{info_list[i][5]}'")
+            self.cursor.execute(f"SELECT id_date FROM date WHERE date = ('{info_list[i][3]}')")
             id_date = self.cursor.fetchone()
-            self.cursor.execute(f"INSERT INTO btmp_wtmpInfo (user, tty, host, date_id, time, session, flag) VALUES (?, ?, ?, ?, ?, ?, ?)", (info_list[i][0],info_list[i][1],info_list[i][2], int(id_date[0]),info_list[i][6], info_list[i][7], flag))
+            self.cursor.execute(f"INSERT INTO btmp_wtmpInfo (user, tty, host, date_id, time, session, flag) VALUES (?, ?, ?, ?, ?, ?, ?)", (info_list[i][0],info_list[i][1],info_list[i][2], int(id_date[0]),info_list[i][4], info_list[i][5], flag))
         self.cursor.execute("DELETE FROM btmp_wtmpInfo WHERE rowid NOT IN (SELECT MIN(rowid) FROM btmp_wtmpInfo GROUP BY user, tty, host, date_id, time, session, flag);")
         self.db.commit()
         
     def insert_date_db(self, info_list):
-        self.cursor.executemany("INSERT INTO date (month, day) VALUES (?, ?)", info_list)
-        self.cursor.execute("DELETE FROM date  WHERE rowid NOT IN (SELECT MIN(rowid) FROM date GROUP BY month, day);")
+        for i in range(len(info_list)-1):
+            self.cursor.execute(f"INSERT INTO date (date) VALUES ('{info_list[i]}')")
+        self.cursor.execute("DELETE FROM date  WHERE rowid NOT IN (SELECT MIN(rowid) FROM date GROUP BY date);")
         self.db.commit()
 
     def close_db(self):
