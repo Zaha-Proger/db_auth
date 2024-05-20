@@ -3,6 +3,7 @@ import customtkinter as CTK
 from tkinter import ttk
 from db import DB
 from parserlog import ParseLog
+from datetime import datetime
 
 db = None
 parser = None
@@ -55,18 +56,15 @@ def search(db, table, flag, records):
     def search_in_bd(db, req, table, flag):
         if flag == "secure":
             if ":" in req:
-                print(req[:10], req[11:])
                 db.cursor.execute(f"SELECT * FROM authInfo_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
             else: db.cursor.execute("SELECT * FROM authInfo_with_date WHERE desc LIKE ? OR date LIKE ? OR proc LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "wtmp":
             if ":" in req:
-                print(req[:10], req[11:])
                 db.cursor.execute(f"SELECT * FROM wtmp_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
             else:
                 db.cursor.execute("SELECT * FROM wtmp_with_date WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
         elif flag == "btmp":
             if ":" in req:
-                print(req[:10], req[11:])
                 db.cursor.execute(f"SELECT * FROM btmp_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
             else:
                 db.cursor.execute("SELECT * FROM btmp_with_date WHERE user LIKE ? OR tty LIKE ? OR host LIKE ? OR date LIKE ? OR time LIKE ? OR session LIKE ?", ('%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%','%'+req+'%',))
@@ -121,7 +119,7 @@ def open_table_secure_log():
     for r in records:
         table.insert("", "end", values=r)
 
-    table.bind('<Motion>', 'break') #запрет изменения размера столбцов
+    table.bind('<Motion>', 'break')
 
 def open_table_bWtmp_log(flag):
     global db, parser, root
@@ -153,7 +151,7 @@ def open_table_bWtmp_log(flag):
     table.heading("host", text="Хост", anchor="n")
     table.heading("date", text="Дата", anchor="n", command=lambda: sort_table(table, 3, False))
     table.heading("time", text="Время", anchor="n", command=lambda: sort_table(table, 4, False))
-    table.heading("session", text="Прод-ть сессии", anchor="n", command=lambda: sort_table(table, 5, False))
+    table.heading("session", text="Пр-ть сессии", anchor="n", command=lambda: sort_table(table, 5, False))
 
     table.column("#1", stretch=False, width=100, anchor="center")
     table.column("#2", stretch=False, width=100, anchor="center")
@@ -173,7 +171,75 @@ def open_table_bWtmp_log(flag):
         for r in records:
             table.insert("", "end", values=r)
 
-    table.bind('<Motion>', 'break') #запрет изменения размера столбцов
+    table.bind('<Motion>', 'break')
+
+def check_date(textbox,req):
+        textbox.configure(state = "normal")
+        if ":" in req:
+            db.cursor.execute(f"SELECT * FROM authInfo_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
+            results = db.cursor.fetchall()
+            for r in results:
+                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+            db.cursor.execute(f"SELECT * FROM wtmp_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
+            results = db.cursor.fetchall()
+            for r in results:
+                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+            db.cursor.execute(f"SELECT * FROM btmp_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
+            results = db.cursor.fetchall()
+            for r in results:
+                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+        else:
+            db.cursor.execute(f"SELECT * FROM authInfo_with_date WHERE date = '{req[:10]}'")
+            results = db.cursor.fetchall()
+            for r in results:
+                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+            db.cursor.execute(f"SELECT * FROM wtmp_with_date WHERE date = '{req[:10]}'")
+            results = db.cursor.fetchall()
+            for r in results:
+                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+            db.cursor.execute(f"SELECT * FROM btmp_with_date WHERE date = '{req[:10]}'")
+            results = db.cursor.fetchall()
+            for r in results:
+                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+        # 2024-05-15:2024-05-19
+        
+        textbox.configure(state = "disabled")
+
+def open_check_win(text_info):
+
+    check_window = CTK.CTkToplevel()
+    check_window.geometry("300x100+400+300")
+    check_window.title("события по дате")
+    check_window.resizable(False, False)
+
+    search_entry = CTK.CTkEntry(master=check_window,  width = 250)
+    search_entry.pack(padx = 20, pady = 20)
+
+    b_cancel = CTK.CTkButton(master=check_window, width=100, text="отмена", command= check_window.destroy)
+    b_cancel.place(relx = 0.09, rely = 0.6)
+
+    b_search = CTK.CTkButton(master=check_window, width=100, text="поиск", command= lambda: check_date(text_info, search_entry.get()))
+    b_search.place(relx = 0.59, rely = 0.6)
+
+def open_check_all():
+    global root
+
+    frame_info = CTK.CTkFrame(master=root)
+    frame_info.grid(row=0, column=0, padx=5, sticky="n")
+
+    frame_buttons = CTK.CTkFrame(master = frame_info)
+    frame_buttons.pack(fill="both", expand=True)
+    
+    b_back = CTK.CTkButton(master=frame_buttons, text="назад", command= lambda: frame_info.grid_remove())
+    b_back.grid(row=0, column = 0, padx = 20, pady = 20)
+
+    b_search = CTK.CTkButton(master=frame_buttons, text="поиск", command= lambda: open_check_win(text_info))
+    b_search.grid(row=0, column = 2, pady = 20)
+
+    text_info = CTK.CTkTextbox(master=frame_info, width=800, height=500)
+    text_info.pack()
+
+    check_date(text_info, str(datetime.now())[:10])
 
 def create_root_win():
     global root
@@ -181,8 +247,8 @@ def create_root_win():
     root.title("authDB")
     root.resizable(False, False)
 
-    CTK.set_appearance_mode("System")  # Modes: system (default), light, dark
-    CTK.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
+    CTK.set_appearance_mode("System")
+    CTK.set_default_color_theme("blue")
 
     bg_color = root._apply_appearance_mode(CTK.ThemeManager.theme["CTkFrame"]["fg_color"])
     text_color = root._apply_appearance_mode(CTK.ThemeManager.theme["CTkLabel"]["text_color"])
@@ -208,11 +274,14 @@ def create_root_win():
     b_btmplog = CTK.CTkButton(master=frame_with_buttons, text="/var/log/btmp", command= lambda: open_table_bWtmp_log("btmp"))
     b_btmplog.grid(row=3, column = 0, padx = 20, pady = 15)
 
+    b_checkAll = CTK.CTkButton(master=frame_with_buttons, text="события по дате", command= open_check_all)
+    b_checkAll.grid(row=5, column = 0, padx = 20, pady = 15)
+
     b_updateDB = CTK.CTkButton(master=frame_with_buttons, text="обновить БД", command= update_db)
-    b_updateDB.grid(row=4, column = 0, padx = 20, pady = 15)
+    b_updateDB.grid(row=6, column = 0, padx = 20, pady = 15)
 
     b_exit = CTK.CTkButton(master=frame_with_buttons, text="выход", command=exit_app)
-    b_exit.grid(row=5, column = 0, padx = 20, pady = 30)
+    b_exit.grid(row=7, column = 0, padx = 20, pady = 30)
 
     root.mainloop()
     

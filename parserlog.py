@@ -1,7 +1,7 @@
 import textwrap
 import platform
 from os import path
-import datetime
+from datetime import datetime
 from subprocess import run, STDOUT, PIPE
 
 class ParseLog():
@@ -10,7 +10,7 @@ class ParseLog():
         self.db = db
 
     def convert_date(self, month, day):
-        year = str(datetime.datetime.now())[:4]
+        year = str(datetime.now())[:4]
         if month == "Jun":
             month = "01"
         elif month == "Feb":
