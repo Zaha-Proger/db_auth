@@ -175,32 +175,34 @@ def open_table_bWtmp_log(flag):
 
 def check_date(textbox,req):
         textbox.configure(state = "normal")
+        symbol = ","
+        symbol_change = "  --- "
         if ":" in req:
             db.cursor.execute(f"SELECT * FROM authInfo_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
             results = db.cursor.fetchall()
             for r in results:
-                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+                textbox.insert("0.0", f"{str(r).replace(symbol, symbol_change)}\n")
             db.cursor.execute(f"SELECT * FROM wtmp_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
             results = db.cursor.fetchall()
             for r in results:
-                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+                textbox.insert("0.0", f"{str(r).replace(symbol, symbol_change)}\n")
             db.cursor.execute(f"SELECT * FROM btmp_with_date WHERE date >= '{req[:10]}' AND date <= '{req[11:]}'")
             results = db.cursor.fetchall()
             for r in results:
-                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+                textbox.insert("0.0", f"{str(r).replace(symbol, symbol_change)}\n")
         else:
             db.cursor.execute(f"SELECT * FROM authInfo_with_date WHERE date = '{req[:10]}'")
             results = db.cursor.fetchall()
             for r in results:
-                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+                textbox.insert("0.0", f"{str(r).replace(symbol, symbol_change)}\n")
             db.cursor.execute(f"SELECT * FROM wtmp_with_date WHERE date = '{req[:10]}'")
             results = db.cursor.fetchall()
             for r in results:
-                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+                textbox.insert("0.0", f"{str(r).replace(symbol, symbol_change)}\n")
             db.cursor.execute(f"SELECT * FROM btmp_with_date WHERE date = '{req[:10]}'")
             results = db.cursor.fetchall()
             for r in results:
-                textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
+                textbox.insert("0.0", f"{str(r).replace(symbol, symbol_change)}\n")
         
         textbox.configure(state = "disabled")
 
