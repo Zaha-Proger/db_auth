@@ -201,9 +201,12 @@ def check_date(textbox,req):
             results = db.cursor.fetchall()
             for r in results:
                 textbox.insert("0.0", f"{str(r).replace(",", "  --- ")}\n")
-        # 2024-05-15:2024-05-19
         
         textbox.configure(state = "disabled")
+
+def close_check_win(text_info, win):
+    check_date(text_info, str(datetime.now())[:10])
+    win.destroy()
 
 def open_check_win(text_info):
 
@@ -215,7 +218,7 @@ def open_check_win(text_info):
     search_entry = CTK.CTkEntry(master=check_window,  width = 250)
     search_entry.pack(padx = 20, pady = 20)
 
-    b_cancel = CTK.CTkButton(master=check_window, width=100, text="отмена", command= check_window.destroy)
+    b_cancel = CTK.CTkButton(master=check_window, width=100, text="отмена", command= lambda: close_check_win(text_info, check_window))
     b_cancel.place(relx = 0.09, rely = 0.6)
 
     b_search = CTK.CTkButton(master=check_window, width=100, text="поиск", command= lambda: check_date(text_info, search_entry.get()))
